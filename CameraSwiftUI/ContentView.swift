@@ -19,17 +19,6 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Spacer()
-            
-            // 撮影した写真がある時
-            if let captureImage {
-                // 撮影写真を表示
-                Image(uiImage: captureImage)
-                // リサイズ
-                    .resizable()
-                // アスペクト比(縦横比)を維持して画面に収める
-                    .scaledToFit()
-            }
             
             Spacer()
             
@@ -38,6 +27,8 @@ struct ContentView: View {
                 // ボタンをタップした時のアクション(クロージャ)
                 if UIImagePickerController.isSourceTypeAvailable(.camera) {
                     print("カメラは利用できます")
+                    // 撮影写真を初期化する
+                    captureImage = nil
                     // カメラが使えるならisShowSheetをtrue
                     isShowSheet.toggle()
                 } else {
@@ -60,8 +51,13 @@ struct ContentView: View {
             // isPresentedで指定した状態変数がtrueの時実行 これはButtonにあるSheet modifier
             // modifierは各順番で振る舞いが変わる(順次適応)ので注意
             .sheet(isPresented: $isShowSheet) {
-                // UIImagePickerController(写真撮影を表示) $をつけることで参照先を共有
-                ImagePickerView(isShowSheet: $isShowSheet, captureImage: $captureImage)
+                if let captureImage {
+                    // 撮影した写真がある->EffectViewを表示する
+                    EffectView(isShowSheet: $isShowSheet, captureImage: captureImage)
+                } else {
+                    // UIImagePickerController(写真撮影を表示) $をつけることで参照先を共有
+                    ImagePickerView(isShowSheet: $isShowSheet, captureImage: $captureImage)
+                }
             }
             
             // フォトライブラリーから選択する
@@ -92,23 +88,11 @@ struct ContentView: View {
                     }
                 }
             }
-            
-            // captureImageをアンラップする
-            if let captureImage {
-                // captureImageから共有する画像を生成する
-                let shareImage = Image(uiImage: captureImage)
-                
-                // 共有シート
-                ShareLink(item: shareImage, subject: nil, message: nil, preview: SharePreview("Photo", image: shareImage)) {
-                    // テキスト表示
-                    Text("SNSに投稿する")
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.blue)
-                        .foregroundColor(Color.white)
-                        .padding()
-                    
-                }
+        }
+        .onChange(of: captureImage) { oldValue, newValue in
+            if let _ = newValue {
+                // 撮影した写真がある->EffectViewを表示する
+                isShowSheet.toggle()
             }
         }
     }
