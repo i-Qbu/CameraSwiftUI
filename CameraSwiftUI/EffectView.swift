@@ -14,6 +14,26 @@ struct EffectView: View {
     let captureImage: UIImage
     // 表示する写真
     @State var showImage: UIImage?
+    // フィルタ名を列挙した配列(Array)
+    // 0.モノクロ
+    // 1.Chrome
+    // 2.Fade
+    // 3.Instant
+    // 4.Noir
+    // 5.Process
+    // 6.Tonal
+    // 7.Transtar
+    // 8.SepiaTone
+    let filterArray = ["CIPhotoEffectMono",
+                  "CIPhotoEffectChrome",
+                  "CIPhotoEffectFade",
+                  "CIPhotoEffectInstant",
+                  "CIPhotoEffectTransfar",
+                  "CISepiaTone"
+    ]
+    
+    // 選択中のエフェクト(filterArrayの添字)
+    @State var filterSelectNumber = 0
     
     var body: some View {
         VStack {
@@ -31,8 +51,15 @@ struct EffectView: View {
             
             Button {
                 // ボタンをタップしたときのアクション
-                // フィルタ名を指定
-                let filterName = "CIPhotoEffectMono"
+                // フィルタ名を配列から取得
+                let filterName = filterArray[filterSelectNumber]
+                // 次回に適用するフィルタを決めておく
+                filterSelectNumber += 1
+                // 最後のフィルタまで適用した場合
+                if filterSelectNumber == filterArray.count {
+                    // 最後の場合は，最初のフィルタに戻す
+                    filterSelectNumber = 0
+                }
                 // 元々の画像の回転角度を取得
                 let rotate = captureImage.imageOrientation
                 // UIImage英紙の画像をCIImage形式に変換
